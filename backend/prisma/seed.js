@@ -4,29 +4,54 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-async function main() {
+// Creates the admin account, renames the default one if SEED_EMAIL changed,
+// and keeps its credentials in sync with the SEED_* env vars (the source of
+// truth for the deploy). The same user row is updated, so exhibits/tasks stay.
+async function ensureAdmin() {
   const email = process.env.SEED_EMAIL || 'admin@example.com';
-  const password = process.env.SEED_PASSWORD || 'admin123';
   const username = process.env.SEED_USERNAME || 'admin';
+  const password = process.env.SEED_PASSWORD;
 
   const existing = await prisma.user.findUnique({ where: { email } });
-  if (!existing) {
-    const passwordHash = await bcrypt.hash(password, 10);
-    await prisma.user.create({
-      data: {
-        email,
-        passwordHash,
-        displayName: 'Museum Owner',
-        username,
-        isPublic: true,
-      },
-    });
-    console.log(`Seeded admin user: ${email} / ${password}`);
-  } else {
-    console.log('Admin user already exists, skipping user seed.');
+  if (existing) {
+    if (password) {
+      const passwordHash = await bcrypt.hash(password, 10);
+      await prisma.user.update({ where: { id: existing.id }, data: { passwordHash } });
+      console.log(`Admin "${email}" credentials updated from env.`);
+    } else {
+      console.log(`Admin user "${email}" already exists, skipping user seed.`);
+    }
+    return existing;
   }
 
-  const admin = await prisma.user.findUnique({ where: { email } });
+  // The admin's email changed via SEED_EMAIL: rename the default admin account
+  // instead of creating a second one.
+  const legacy = await prisma.user.findFirst({ where: { email: 'admin@example.com' } });
+  if (legacy) {
+    const data = { email, username, displayName: 'Museum Owner' };
+    if (password) {
+      data.passwordHash = await bcrypt.hash(password, 10);
+    }
+    const updated = await prisma.user.update({ where: { id: legacy.id }, data });
+    console.log(`Admin account updated to ${email}.`);
+    return updated;
+  }
+
+  const admin = await prisma.user.create({
+    data: {
+      email,
+      passwordHash: await bcrypt.hash(password || 'admin123', 10),
+      displayName: 'Museum Owner',
+      username,
+      isPublic: true,
+    },
+  });
+  console.log(`Seeded admin user: ${email}`);
+  return admin;
+}
+
+async function main() {
+  const admin = await ensureAdmin();
 
   const exhibitCount = await prisma.exhibit.count({ where: { userId: admin.id } });
   if (exhibitCount === 0) {
