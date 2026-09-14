@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  displayName  String
+  username     String    @unique
+  isPublic     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  exhibits     Exhibit[]
+  tasks        Task[]
+}
+
+model Exhibit {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        String   // PHOTO | PROJECT | ACHIEVEMENT
+  title       String
+  description String
+  imageUrl    String?
+  date        DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Task {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  dueDate   DateTime
+  completed Boolean  @default(false)
+  createdAt DateTime @default(now())
+}

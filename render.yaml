@@ -1,0 +1,23 @@
+# Render Blueprint for Museum & Planner (single container: API + SPA).
+# Requires a paid Render instance because SQLite + uploaded images need a
+# persistent disk mounted at /data.
+services:
+  - type: web
+    name: museum-planner
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    plan: starter
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        value: file:/data/museum.db
+      - key: UPLOADS_DIR
+        value: /data/uploads
+    disk:
+      name: museum-data
+      mountPath: /data
+      sizeGB: 1

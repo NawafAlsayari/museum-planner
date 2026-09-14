@@ -1,0 +1,16 @@
+services:
+  web:
+    build: .
+    ports:
+      - "4000:4000"
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      JWT_SECRET: change-me-in-production
+      DATABASE_URL: file:/data/museum.db
+      UPLOADS_DIR: /data/uploads
+    volumes:
+      - museum-data:/data
+
+volumes:
+  museum-data:

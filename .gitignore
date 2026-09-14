@@ -1,0 +1,27 @@
+# Dependencies
+node_modules
+**/node_modules
+
+# Build output
+dist
+**/dist
+
+# Environment files
+.env
+.env.*
+
+# Local SQLite database
+*.db
+*.sqlite
+backend/prisma/dev.db
+
+# Uploaded files (keep the folder via .gitkeep)
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

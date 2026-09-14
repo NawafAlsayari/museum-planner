@@ -1,0 +1,170 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
+@import "tailwindcss";
+
+/* ---- Retro pixel palette (remaps Tailwind color tokens) ---- */
+@theme {
+  /* neutral "stone" scale -> dark arcade greys */
+  --color-stone-50: #0c0c13;
+  --color-stone-100: #171722;
+  --color-stone-200: #23232e;
+  --color-stone-300: #33333f;
+  --color-stone-400: #7d7d90;
+  --color-stone-500: #9d9db0;
+  --color-stone-600: #c6c6d6;
+  --color-stone-700: #e2e2ec;
+  --color-stone-800: #f0f0f6;
+  --color-stone-900: #06060a;
+
+  /* amber accent -> bright pixel yellow */
+  --color-amber-50: #2a2406;
+  --color-amber-100: #3d3308;
+  --color-amber-400: #ffd23f;
+  --color-amber-600: #ffb000;
+  --color-amber-700: #ff9f00;
+  --color-amber-800: #e08a00;
+
+  /* white used for panels becomes a dark "screen" */
+  --color-white: #171722;
+
+  /* red danger */
+  --color-red-50: #2b0d13;
+  --color-red-200: #5c1a26;
+  --color-red-500: #ff5c7a;
+  --color-red-600: #ff4d6d;
+  --color-red-700: #ff3d5e;
+
+  /* emerald success */
+  --color-emerald-50: #0b2417;
+  --color-emerald-100: #14402a;
+  --color-emerald-600: #2fbf6b;
+  --color-emerald-700: #20a75a;
+
+  /* sky photo tag */
+  --color-sky-100: #0c2833;
+  --color-sky-700: #4fc3ff;
+}
+
+@layer base {
+  * {
+    border-radius: 0 !important;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'VT323', monospace;
+    font-size: 1.15rem;
+    line-height: 1.35;
+    background-color: #0c0c13;
+    color: #c6c6d6;
+    -webkit-font-smoothing: none;
+  }
+
+  img {
+    image-rendering: pixelated;
+  }
+
+  h1, h2, h3, h4,
+  .font-serif {
+    font-family: 'VT323', monospace;
+    letter-spacing: 0.02em;
+  }
+
+  button,
+  .font-pixel {
+    font-family: 'Press Start 2P', monospace;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+  }
+
+  input,
+  select,
+  textarea {
+    font-family: 'VT323', monospace;
+  }
+
+  ::selection {
+    background: #ffb000;
+    color: #0c0c13;
+  }
+}
+
+/* ---- Chunky pixel buttons ---- */
+.pixel-btn {
+  display: inline-block;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  padding: 0.7rem 0.9rem;
+  color: #0c0c13;
+  background: #ffb000;
+  border: 0;
+  box-shadow: 0 4px 0 #0c0c13;
+  cursor: pointer;
+  transition: transform 60ms linear, box-shadow 60ms linear, background 60ms linear;
+}
+.pixel-btn:hover { background: #ffc400; }
+.pixel-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #0c0c13; }
+
+.pixel-btn--secondary {
+  background: #23232e;
+  color: #c6c6d6;
+  box-shadow: 0 4px 0 #06060a;
+}
+.pixel-btn--secondary:hover { background: #2c2c3a; }
+
+.pixel-btn--danger {
+  background: #ff4d6d;
+  color: #0c0c13;
+  box-shadow: 0 4px 0 #06060a;
+}
+.pixel-btn--danger:hover { background: #ff6b86; }
+
+/* ---- Pixel panel / card ---- */
+.pixel-panel {
+  background: #171722;
+  border: 2px solid #06060a;
+  box-shadow: 0 4px 0 #06060a;
+}
+
+/* ---- Pixel inputs ---- */
+.pixel-input {
+  background: #0c0c13;
+  border: 2px solid #33333f;
+  color: #e2e2ec;
+  padding: 0.5rem 0.6rem;
+}
+.pixel-input:focus {
+  outline: none;
+  border-color: #ffb000;
+  box-shadow: 0 0 0 2px #ffb00066;
+}
+
+/* ---- Pixel tag pill ---- */
+.pixel-tag {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.5rem;
+  text-transform: uppercase;
+  padding: 0.3rem 0.45rem;
+  border: 2px solid #06060a;
+  box-shadow: 0 2px 0 #06060a;
+}
+
+/* ---- Subtle CRT scanline overlay ---- */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.12) 0px,
+    rgba(0, 0, 0, 0.12) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  opacity: 0.22;
+  z-index: 9999;
+}

@@ -1,0 +1,13 @@
+node_modules
+**/node_modules
+dist
+**/dist
+.git
+.gitignore
+*.md
+backend/.env
+frontend/.env
+backend/uploads
+backend/prisma/dev.db
+backend/scripts
+README.md
