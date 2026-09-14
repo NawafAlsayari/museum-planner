@@ -106,6 +106,9 @@ the (idempotent) seed (which creates `admin@example.com` / `admin123`), then the
 | `DIRECT_URL` | `postgresql://user:password@ep-xxx.aws.neon.tech/db?sslmode=require` | Migration Postgres (direct) connection (required) |
 | `PORT` | `4000` | Listen port (set automatically by the provider) |
 
+> Neon's "connect" page may append `&channel_binding=require` to both strings;
+> that parameter is harmless and supported by Prisma — leave it in place.
+
 ### Render (default)
 
 The included `render.yaml` blueprint defines a Docker web service on the **free**
@@ -117,11 +120,13 @@ tier (no disk needed):
 3. In Render: **New → Blueprint**, point it at the repo.
 4. After the service is created, add `DATABASE_URL` and `DIRECT_URL` environment
    variables in the Render dashboard with your Neon strings, and generate a strong
-   `JWT_SECRET`. (`render.yaml` auto-generates `JWT_SECRET`.)
+   `JWT_SECRET`. (`render.yaml` auto-generates `JWT_SECRET` and lists the two DB
+   vars as fields to fill in.)
 5. Open the service URL, log in with `admin@example.com` / `admin123`.
 
-> Add `DATABASE_URL`/`DIRECT_URL` in the dashboard because the connection strings
-> contain credentials that should not live in the repo.
+> `DIRECT_URL` is **required** — `prisma migrate deploy` refuses to run without it,
+> and Neon's direct connection can cold-start, so the container retries the
+> migration a few times before giving up.
 
 ### Railway / Fly.io / Koyeb
 
