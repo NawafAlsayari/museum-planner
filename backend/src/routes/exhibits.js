@@ -1,32 +1,12 @@
 import { Router } from 'express';
 import multer from 'multer';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import fs from 'fs';
 import prisma from '../db.js';
 import { requireAuth } from '../middleware/auth.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const uploadDir = process.env.UPLOADS_DIR || path.join(__dirname, '..', '..', 'uploads');
-
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
 const VALID_TYPES = ['PHOTO', 'PROJECT', 'ACHIEVEMENT'];
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadDir),
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname) || '.jpg';
-    const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
-    cb(null, unique);
-  },
-});
-
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 8 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     if (/image\/(jpeg|png|gif|webp)/.test(file.mimetype)) {
@@ -35,6 +15,19 @@ const upload = multer({
     return cb(new Error('Only image files are allowed'));
   },
 });
+
+// Never ship raw image bytes in JSON API responses; the image is served
+// separately from /uploads/:id.
+const exhibitSelect = {
+  id: true,
+  type: true,
+  title: true,
+  description: true,
+  imageUrl: true,
+  date: true,
+  createdAt: true,
+  updatedAt: true,
+};
 
 const router = Router();
 
@@ -47,6 +40,7 @@ router.get('/', async (req, res, next) => {
     const exhibits = await prisma.exhibit.findMany({
       where: { userId: req.user.id },
       orderBy: { date: 'desc' },
+      select: exhibitSelect,
     });
     return res.json({ exhibits });
   } catch (err) {
@@ -59,6 +53,7 @@ router.get('/:id', async (req, res, next) => {
   try {
     const exhibit = await prisma.exhibit.findFirst({
       where: { id: req.params.id, userId: req.user.id },
+      select: exhibitSelect,
     });
     if (!exhibit) return res.status(404).json({ error: 'Exhibit not found' });
     return res.json({ exhibit });
@@ -86,6 +81,7 @@ router.post('/', async (req, res, next) => {
         description: description || '',
         date: date ? new Date(date) : null,
       },
+      select: exhibitSelect,
     });
     return res.status(201).json({ exhibit });
   } catch (err) {
@@ -93,20 +89,25 @@ router.post('/', async (req, res, next) => {
   }
 });
 
-// Upload an image for an exhibit
+// Upload an image for an exhibit (stored in the database)
 router.post('/:id/image', upload.single('image'), async (req, res, next) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'image file is required' });
 
     const exhibit = await prisma.exhibit.findFirst({
       where: { id: req.params.id, userId: req.user.id },
+      select: { id: true },
     });
     if (!exhibit) return res.status(404).json({ error: 'Exhibit not found' });
 
-    const imageUrl = `/uploads/${req.file.filename}`;
     const updated = await prisma.exhibit.update({
       where: { id: exhibit.id },
-      data: { imageUrl },
+      data: {
+        imageUrl: `/uploads/${exhibit.id}`,
+        imageData: req.file.buffer,
+        imageMime: req.file.mimetype,
+      },
+      select: exhibitSelect,
     });
     return res.json({ exhibit: updated });
   } catch (err) {
@@ -124,17 +125,19 @@ router.put('/:id', async (req, res, next) => {
 
     const exhibit = await prisma.exhibit.findFirst({
       where: { id: req.params.id, userId: req.user.id },
+      select: { id: true },
     });
     if (!exhibit) return res.status(404).json({ error: 'Exhibit not found' });
 
     const updated = await prisma.exhibit.update({
       where: { id: exhibit.id },
       data: {
-        type: type || exhibit.type,
-        title: title ?? exhibit.title,
-        description: description ?? exhibit.description,
-        date: date ? new Date(date) : exhibit.date,
+        type: type || undefined,
+        title: title ?? undefined,
+        description: description ?? undefined,
+        date: date ? new Date(date) : undefined,
       },
+      select: exhibitSelect,
     });
     return res.json({ exhibit: updated });
   } catch (err) {
@@ -147,15 +150,9 @@ router.delete('/:id', async (req, res, next) => {
   try {
     const exhibit = await prisma.exhibit.findFirst({
       where: { id: req.params.id, userId: req.user.id },
+      select: { id: true },
     });
     if (!exhibit) return res.status(404).json({ error: 'Exhibit not found' });
-
-    // Remove associated local image if present
-    if (exhibit.imageUrl) {
-      const filename = path.basename(exhibit.imageUrl);
-      const filePath = path.join(uploadDir, filename);
-      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-    }
 
     await prisma.exhibit.delete({ where: { id: exhibit.id } });
     return res.status(204).end();

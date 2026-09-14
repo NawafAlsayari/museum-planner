@@ -1,4 +1,22 @@
+# Local stack: run the app against a Postgres container. For production use a
+# hosted Postgres (e.g. Neon) and set DATABASE_URL accordingly.
 services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: museum
+      POSTGRES_PASSWORD: museum
+      POSTGRES_DB: museum
+    ports:
+      - "5432:5432"
+    volumes:
+      - museum-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U museum"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   web:
     build: .
     ports:
@@ -7,10 +25,10 @@ services:
       NODE_ENV: production
       PORT: 4000
       JWT_SECRET: change-me-in-production
-      DATABASE_URL: file:/data/museum.db
-      UPLOADS_DIR: /data/uploads
-    volumes:
-      - museum-data:/data
+      DATABASE_URL: postgresql://museum:museum@db:5432/museum
+    depends_on:
+      db:
+        condition: service_healthy
 
 volumes:
-  museum-data:
+  museum-db:

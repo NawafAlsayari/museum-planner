@@ -67,6 +67,28 @@ async function run() {
   const update = await request(app).put(`${BASE}/exhibits/${exhibitId}`).set(auth).send({ title: 'Updated Title' });
   check('update exhibit works', update.status === 200 && update.body.exhibit.title === 'Updated Title');
 
+  // Image upload is stored in Postgres (BYTEA) and served back from /uploads/:id.
+  const png = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+    'base64'
+  );
+  const upload = await request(app)
+    .post(`${BASE}/exhibits/${exhibitId}/image`)
+    .set(auth)
+    .attach('image', png, { filename: 'test.png', contentType: 'image/png' });
+  check('upload exhibit image works', upload.status === 200 && upload.body.exhibit.imageUrl === `/uploads/${exhibitId}`);
+  check('image upload does not leak bytes in JSON', !('imageData' in upload.body.exhibit) && !('imageMime' in upload.body.exhibit));
+
+  const served = await request(app)
+    .get(`/uploads/${exhibitId}`)
+    .buffer(true)
+    .parse((res, done) => {
+      const chunks = [];
+      res.on('data', (chunk) => chunks.push(chunk));
+      res.on('end', () => done(null, Buffer.concat(chunks)));
+    });
+  check('served image returns the stored bytes', served.status === 200 && served.body.equals(png));
+
   console.log('\nPublic museum');
   const museum = await request(app).get(`${BASE}/museum/admin`);
   check('public museum returns exhibits', museum.status === 200 && Array.isArray(museum.body.exhibits));

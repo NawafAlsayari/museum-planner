@@ -26,12 +26,10 @@ COPY --from=backend /app/backend ./backend
 COPY --from=frontend /app/frontend/dist ./frontend/dist
 
 ENV NODE_ENV=production \
-    PORT=4000 \
-    DATABASE_URL=file:/data/museum.db \
-    UPLOADS_DIR=/data/uploads
+    PORT=4000
 
-# Serve data (SQLite DB + uploaded images) from a persistent volume at /data.
+# Data (DB rows + image bytes) is stored in Postgres, provided via DATABASE_URL.
 WORKDIR /app/backend
 EXPOSE 4000
 
-CMD ["sh", "-c", "mkdir -p /data/uploads && npx prisma migrate deploy && node prisma/seed.js && node src/index.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy && node prisma/seed.js && node src/index.js"]

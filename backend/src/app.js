@@ -4,6 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 
+import prisma from './db.js';
 import authRoutes from './routes/auth.js';
 import exhibitRoutes from './routes/exhibits.js';
 import museumRoutes from './routes/museum.js';
@@ -17,10 +18,24 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Uploaded images live on a configurable directory so the path can be a
-// persistent volume in production.
-const uploadsDir = process.env.UPLOADS_DIR || path.join(__dirname, '..', 'uploads');
-app.use('/uploads', express.static(uploadsDir));
+// Image bytes are served straight from the database; /uploads/:id resolves an
+// exhibit id rather than a filesystem path, so no persistent volume is needed.
+app.get('/uploads/:id', async (req, res, next) => {
+  try {
+    const exhibit = await prisma.exhibit.findUnique({
+      where: { id: req.params.id },
+      select: { imageData: true, imageMime: true },
+    });
+    if (!exhibit || !exhibit.imageData) {
+      return res.status(404).end();
+    }
+    res.set('Content-Type', exhibit.imageMime || 'application/octet-stream');
+    res.set('Cache-Control', 'public, max-age=31536000, immutable');
+    return res.send(Buffer.from(exhibit.imageData));
+  } catch (err) {
+    return next(err);
+  }
+});
 
 // Routes
 app.use('/api/auth', authRoutes);

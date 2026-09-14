@@ -1,23 +1,23 @@
 # Render Blueprint for Museum & Planner (single container: API + SPA).
-# Requires a paid Render instance because SQLite + uploaded images need a
-# persistent disk mounted at /data.
+# Data and images live in a hosted Postgres database (e.g. Neon), so no
+# persistent disk is required and the free web tier works.
+#
+# After this service is created, add two environment variables in the Render
+# dashboard:
+#   DATABASE_URL  - your Neon pooled connection string (host ends in -pooler)
+#   DIRECT_URL    - your Neon direct connection string (same, minus -pooler)
+# Example:
+#   DATABASE_URL=postgresql://user:password@ep-xxx-pooler.region.aws.neon.tech/db?sslmode=require
+#   DIRECT_URL=postgresql://user:password@ep-xxx.region.aws.neon.tech/db?sslmode=require
 services:
   - type: web
     name: museum-planner
     runtime: docker
     dockerfilePath: ./Dockerfile
     healthCheckPath: /api/health
-    plan: starter
+    plan: free
     envVars:
       - key: NODE_ENV
         value: production
       - key: JWT_SECRET
         generateValue: true
-      - key: DATABASE_URL
-        value: file:/data/museum.db
-      - key: UPLOADS_DIR
-        value: /data/uploads
-    disk:
-      name: museum-data
-      mountPath: /data
-      sizeGB: 1

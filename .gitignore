@@ -10,15 +10,6 @@ dist
 .env
 .env.*
 
-# Local SQLite database
-*.db
-*.sqlite
-backend/prisma/dev.db
-
-# Uploaded files (keep the folder via .gitkeep)
-backend/uploads/*
-!backend/uploads/.gitkeep
-
 # Logs
 *.log
 
