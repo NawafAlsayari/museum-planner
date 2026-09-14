@@ -3,17 +3,17 @@
 
 /* ---- Retro pixel palette (remaps Tailwind color tokens) ---- */
 @theme {
-  /* neutral "stone" scale -> dark arcade greys */
-  --color-stone-50: #0c0c13;
-  --color-stone-100: #171722;
-  --color-stone-200: #23232e;
-  --color-stone-300: #33333f;
-  --color-stone-400: #7d7d90;
-  --color-stone-500: #9d9db0;
-  --color-stone-600: #c6c6d6;
-  --color-stone-700: #e2e2ec;
-  --color-stone-800: #f0f0f6;
-  --color-stone-900: #06060a;
+  /* neutral "stone" scale -> high-contrast dark arcade greys */
+  --color-stone-50: #0b0b12;
+  --color-stone-100: #191926;
+  --color-stone-200: #232334;
+  --color-stone-300: #2f2f42;
+  --color-stone-400: #9a9ab2;
+  --color-stone-500: #b8b8ca;
+  --color-stone-600: #d7d7e3;
+  --color-stone-700: #eef0f7;
+  --color-stone-800: #f7f8fc;
+  --color-stone-900: #07070c;
 
   /* amber accent -> bright pixel yellow */
   --color-amber-50: #2a2406;
@@ -24,7 +24,7 @@
   --color-amber-800: #e08a00;
 
   /* white used for panels becomes a dark "screen" */
-  --color-white: #171722;
+  --color-white: #191926;
 
   /* red danger */
   --color-red-50: #2b0d13;
@@ -37,11 +37,11 @@
   --color-emerald-50: #0b2417;
   --color-emerald-100: #14402a;
   --color-emerald-600: #2fbf6b;
-  --color-emerald-700: #20a75a;
+  --color-emerald-700: #33c975;
 
   /* sky photo tag */
   --color-sky-100: #0c2833;
-  --color-sky-700: #4fc3ff;
+  --color-sky-700: #5bc7ff;
 }
 
 @layer base {
@@ -55,10 +55,11 @@
 
   body {
     font-family: 'VT323', monospace;
-    font-size: 1.15rem;
-    line-height: 1.35;
-    background-color: #0c0c13;
-    color: #c6c6d6;
+    font-size: 1.28rem;
+    line-height: 1.45;
+    letter-spacing: 0.015em;
+    background-color: #0b0b12;
+    color: #d7d7e3;
     -webkit-font-smoothing: none;
   }
 
@@ -87,7 +88,7 @@
 
   ::selection {
     background: #ffb000;
-    color: #0c0c13;
+    color: #0b0b12;
   }
 }
 
@@ -98,44 +99,45 @@
   font-size: 0.6rem;
   text-transform: uppercase;
   padding: 0.7rem 0.9rem;
-  color: #0c0c13;
+  color: #0b0b12;
   background: #ffb000;
   border: 0;
-  box-shadow: 0 4px 0 #0c0c13;
+  box-shadow: 0 4px 0 #07070c;
   cursor: pointer;
   transition: transform 60ms linear, box-shadow 60ms linear, background 60ms linear;
 }
 .pixel-btn:hover { background: #ffc400; }
-.pixel-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #0c0c13; }
+.pixel-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #07070c; }
 
 .pixel-btn--secondary {
-  background: #23232e;
-  color: #c6c6d6;
-  box-shadow: 0 4px 0 #06060a;
+  background: #232334;
+  color: #d7d7e3;
+  box-shadow: 0 4px 0 #07070c;
 }
-.pixel-btn--secondary:hover { background: #2c2c3a; }
+.pixel-btn--secondary:hover { background: #2c2c40; }
 
 .pixel-btn--danger {
   background: #ff4d6d;
-  color: #0c0c13;
-  box-shadow: 0 4px 0 #06060a;
+  color: #0b0b12;
+  box-shadow: 0 4px 0 #07070c;
 }
 .pixel-btn--danger:hover { background: #ff6b86; }
 
 /* ---- Pixel panel / card ---- */
 .pixel-panel {
-  background: #171722;
-  border: 2px solid #06060a;
-  box-shadow: 0 4px 0 #06060a;
+  background: #191926;
+  border: 2px solid #07070c;
+  box-shadow: 0 4px 0 #07070c;
 }
 
 /* ---- Pixel inputs ---- */
 .pixel-input {
-  background: #0c0c13;
-  border: 2px solid #33333f;
-  color: #e2e2ec;
+  background: #0b0b12;
+  border: 2px solid #3b3b50;
+  color: #eef0f7;
   padding: 0.5rem 0.6rem;
 }
+.pixel-input::placeholder { color: #6f6f86; }
 .pixel-input:focus {
   outline: none;
   border-color: #ffb000;
@@ -148,11 +150,11 @@
   font-size: 0.5rem;
   text-transform: uppercase;
   padding: 0.3rem 0.45rem;
-  border: 2px solid #06060a;
-  box-shadow: 0 2px 0 #06060a;
+  border: 2px solid #07070c;
+  box-shadow: 0 2px 0 #07070c;
 }
 
-/* ---- Subtle CRT scanline overlay ---- */
+/* ---- Subtle CRT scanline overlay (kept faint so it never sits on text) ---- */
 body::after {
   content: "";
   position: fixed;
@@ -160,11 +162,11 @@ body::after {
   pointer-events: none;
   background: repeating-linear-gradient(
     0deg,
-    rgba(0, 0, 0, 0.12) 0px,
-    rgba(0, 0, 0, 0.12) 1px,
+    rgba(0, 0, 2, 0.04) 0px,
+    rgba(0, 0, 2, 0.07) 1px,
     transparent 1px,
-    transparent 3px
+    transparent 4px
   );
-  opacity: 0.22;
+  opacity: 0.3;
   z-index: 9999;
 }

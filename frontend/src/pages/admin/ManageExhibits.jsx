@@ -103,7 +103,7 @@ export default function ManageExhibits() {
           </div>
           <div className="p-4">
             <span className="pixel-tag bg-stone-200 text-stone-400 uppercase">{exhibit.type}</span>
-            <h3 className="font-serif text-lg mt-2 text-stone-100 uppercase">{exhibit.title}</h3>
+            <h3 className="font-serif text-lg mt-2 text-stone-700 uppercase">{exhibit.title}</h3>
             <p className="text-sm text-stone-500 line-clamp-2 mt-1">{exhibit.description}</p>
             <div className="flex gap-3 mt-5">
               <button onClick={() => startEdit(exhibit)} className="pixel-btn pixel-btn--secondary text-[0.5rem]">
@@ -122,14 +122,14 @@ export default function ManageExhibits() {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="font-pixel text-stone-100 text-xs uppercase">Museum Exhibits</h2>
+        <h2 className="font-pixel text-stone-700 text-xs uppercase">Museum Exhibits</h2>
         <button onClick={resetForm} className="pixel-btn pixel-btn--secondary text-[0.5rem]">
           NEW EXHIBIT
         </button>
       </div>
 
       <form onSubmit={handleSubmit} className="pixel-panel p-6 mb-8">
-        <h3 className="font-pixel text-stone-100 text-xs mb-4 uppercase">
+        <h3 className="font-pixel text-stone-700 text-xs mb-4 uppercase">
           {editingId ? 'Edit exhibit' : 'Add exhibit'}
         </h3>
         {error && <div className="bg-red-50 text-red-700 text-sm px-4 py-3 mb-4 border-2 border-stone-900">{error}</div>}

@@ -9,7 +9,7 @@ function linkClass({ isActive }) {
 export default function AdminLayout() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
-      <h1 className="font-pixel text-stone-100 text-base mb-8 uppercase">Dashboard</h1>
+      <h1 className="font-pixel text-stone-700 text-base mb-8 uppercase">Dashboard</h1>
       <div className="flex flex-col sm:flex-row gap-8">
         <aside className="sm:w-56 shrink-0">
           <nav className="flex sm:flex-col gap-3">

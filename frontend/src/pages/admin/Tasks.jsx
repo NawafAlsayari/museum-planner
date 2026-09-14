@@ -129,7 +129,7 @@ export default function Tasks() {
           className="mt-1 h-4 w-4 accent-amber-500"
         />
         <div className="flex-1">
-          <span className={task.completed ? 'line-through text-stone-500' : 'text-stone-200'}>{task.title}</span>
+          <span className={task.completed ? 'line-through text-stone-500' : 'text-stone-600'}>{task.title}</span>
           <span className="text-xs text-stone-500 ml-2">{fmt(new Date(task.dueDate))}</span>
         </div>
         <button onClick={() => remove(task.id)} className="text-xs text-red-500 hover:text-red-400 font-pixel text-[0.5rem]">
@@ -142,7 +142,7 @@ export default function Tasks() {
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-        <h2 className="font-pixel text-stone-100 text-xs uppercase">Tasks</h2>
+        <h2 className="font-pixel text-stone-700 text-xs uppercase">Tasks</h2>
         <div className="flex gap-2">
           {VIEWS.map((v) => (
             <button
@@ -248,7 +248,7 @@ export default function Tasks() {
                 <p className="font-pixel text-stone-400 text-[0.5rem]">{d.getDate()}</p>
                 <div className="mt-1 space-y-1">
                   {(byDay[toDateKey(d)] || []).map((t) => (
-                    <div key={t.id} className={`text-xs truncate ${t.completed ? 'line-through text-stone-500' : 'text-stone-200'}`}>
+                    <div key={t.id} className={`text-xs truncate ${t.completed ? 'line-through text-stone-500' : 'text-stone-600'}`}>
                       <input type="checkbox" checked={t.completed} onChange={() => toggle(t)} className="mr-1 accent-amber-500" />
                       {t.title}
                     </div>

@@ -35,7 +35,7 @@ export default function ExhibitCard({ exhibit }) {
         <span className={`pixel-tag ${TYPE_TAG[exhibit.type] || 'bg-stone-200 text-stone-600'}`}>
           {TYPE_LABEL[exhibit.type] || exhibit.type}
         </span>
-        <h3 className="font-serif text-lg mt-3 text-stone-100 uppercase group-hover:text-amber-400">
+        <h3 className="font-serif text-lg mt-3 text-stone-700 uppercase group-hover:text-amber-400">
           {exhibit.title}
         </h3>
         <p className="text-sm text-stone-500 line-clamp-2 mt-1">{exhibit.description}</p>

@@ -37,7 +37,7 @@ export default function Register() {
   return (
     <div className="max-w-md mx-auto px-4 py-16">
       <div className="pixel-panel p-8">
-        <h1 className="font-pixel text-stone-100 text-sm mb-2 uppercase">Create your museum</h1>
+        <h1 className="font-pixel text-stone-700 text-sm mb-2 uppercase">Create your museum</h1>
         <p className="text-stone-500 mb-6">Sign up to start your own public museum & planner.</p>
 
         {error && (

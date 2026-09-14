@@ -25,7 +25,7 @@ export default function Home() {
       <section className="bg-stone-900">
         <div className="max-w-6xl mx-auto px-4 py-20 text-center">
           <p className="text-amber-400 font-pixel text-[0.65rem] tracking-widest mb-4">A PERSONAL DIGITAL GALLERY</p>
-          <h1 className="font-serif text-4xl sm:text-5xl leading-tight text-stone-100 uppercase">
+          <h1 className="font-serif text-4xl sm:text-5xl leading-tight text-stone-700 uppercase">
             My Museum &amp; Planner
           </h1>
           <p className="mt-4 text-stone-400 max-w-2xl mx-auto">
@@ -47,7 +47,7 @@ export default function Home() {
 
       <section className="max-w-6xl mx-auto px-4 py-12">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="font-serif text-2xl text-stone-100 uppercase">Featured Exhibits</h2>
+          <h2 className="font-serif text-2xl text-stone-700 uppercase">Featured Exhibits</h2>
           <Link to="/museum/admin" className="text-amber-400 text-sm font-pixel hover:text-amber-500">
             VIEW ALL →
           </Link>
@@ -69,7 +69,7 @@ export default function Home() {
           {FEATURES.map((f) => (
             <div key={f.title} className="pixel-panel p-6">
               <div className="text-3xl">{f.icon}</div>
-              <h3 className="font-pixel text-stone-100 text-xs mt-3 uppercase">{f.title}</h3>
+              <h3 className="font-pixel text-stone-700 text-xs mt-3 uppercase">{f.title}</h3>
               <p className="text-stone-500 text-sm mt-2">{f.desc}</p>
             </div>
           ))}

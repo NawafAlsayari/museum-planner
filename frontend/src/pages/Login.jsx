@@ -27,7 +27,7 @@ export default function Login() {
   return (
     <div className="max-w-md mx-auto px-4 py-16">
       <div className="pixel-panel p-8">
-        <h1 className="font-pixel text-stone-100 text-sm mb-2 uppercase">Sign in</h1>
+        <h1 className="font-pixel text-stone-700 text-sm mb-2 uppercase">Sign in</h1>
         <p className="text-stone-500 mb-6">Access your private museum dashboard.</p>
 
         {error && (

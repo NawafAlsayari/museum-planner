@@ -34,11 +34,11 @@ export default function ExhibitDetail() {
         )}
         <div className="p-8">
           <span className="pixel-tag bg-amber-100 text-amber-700 uppercase">{exhibit.type}</span>
-          <h1 className="font-serif text-3xl mt-4 text-stone-100 uppercase">{exhibit.title}</h1>
+          <h1 className="font-serif text-3xl mt-4 text-stone-700 uppercase">{exhibit.title}</h1>
           {exhibit.date && (
             <p className="text-stone-500 text-sm mt-2">{new Date(exhibit.date).toLocaleDateString()}</p>
           )}
-          <p className="text-stone-300 mt-6 whitespace-pre-wrap">{exhibit.description}</p>
+          <p className="text-stone-600 mt-6 whitespace-pre-wrap">{exhibit.description}</p>
         </div>
       </div>
     </div>

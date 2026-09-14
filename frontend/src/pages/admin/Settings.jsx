@@ -28,7 +28,7 @@ export default function Settings() {
 
   return (
     <div>
-      <h2 className="font-pixel text-stone-100 text-xs mb-4 uppercase">Settings</h2>
+      <h2 className="font-pixel text-stone-700 text-xs mb-4 uppercase">Settings</h2>
 
       {message && <div className="bg-emerald-50 text-emerald-700 text-sm px-4 py-3 mb-4 border-2 border-stone-900">{message}</div>}
       {error && <div className="bg-red-50 text-red-700 text-sm px-4 py-3 mb-4 border-2 border-stone-900">{error}</div>}
@@ -55,7 +55,7 @@ export default function Settings() {
               onChange={(e) => setIsPublic(e.target.checked)}
               className="h-4 w-4 accent-amber-500"
             />
-            <span className="text-stone-200">Make my museum visible to the public</span>
+            <span className="text-stone-600">Make my museum visible to the public</span>
           </label>
         </div>
 

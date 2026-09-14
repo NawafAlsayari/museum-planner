@@ -32,7 +32,7 @@ export default function Museum() {
     <div className="max-w-6xl mx-auto px-4 py-12">
       <header className="mb-10 text-center">
         <p className="text-amber-400 font-pixel text-[0.6rem] tracking-widest uppercase">Museum</p>
-        <h1 className="font-serif text-4xl mt-2 text-stone-100 uppercase">{data.museum.displayName}</h1>
+        <h1 className="font-serif text-4xl mt-2 text-stone-700 uppercase">{data.museum.displayName}</h1>
         <p className="text-stone-500 mt-2">
           @{data.museum.username} · {data.exhibits.length} exhibit{data.exhibits.length === 1 ? '' : 's'}
         </p>

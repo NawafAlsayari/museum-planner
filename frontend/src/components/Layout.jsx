@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 function navClass({ isActive }) {
   return isActive
     ? 'text-amber-400 font-pixel'
-    : 'text-stone-400 hover:text-stone-200';
+    : 'text-stone-400 hover:text-stone-600';
 }
 
 export default function Layout() {
@@ -12,7 +12,7 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="bg-stone-900 border-b-4 border-amber-600 text-stone-100">
+      <header className="bg-stone-900 border-b-4 border-amber-600 text-stone-700">
         <div className="max-w-6xl mx-auto px-4 py-5 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 font-pixel text-amber-400 text-sm tracking-wide">
             <span className="text-xl">🏛️</span>
