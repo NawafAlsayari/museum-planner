@@ -2,13 +2,24 @@
 # Data and images live in a hosted Postgres database (e.g. Neon), so no
 # persistent disk is required and the free web tier works.
 #
-# After this service is created, add two environment variables in the Render
-# dashboard:
+# After this service is created, add the database and email environment
+# variables in the Render dashboard (all marked `sync: false` stay out of the
+# blueprint, so your values are never overwritten on later deploys):
 #   DATABASE_URL  - your Neon pooled connection string (host ends in -pooler)
 #   DIRECT_URL    - your Neon direct connection string (same, minus -pooler)
+#   SMTP_HOST/PORT/SECURE/USER/PASS - an SMTP account for the password-reset emails
+#   MAIL_FROM     - the "From" address for those emails (optional)
+#   APP_URL       - the public URL used in reset links (optional; defaults to
+#                   Render's RENDER_EXTERNAL_URL, then http://localhost:5173)
+#
 # Example:
 #   DATABASE_URL=postgresql://user:password@ep-xxx-pooler.region.aws.neon.tech/db?sslmode=require
 #   DIRECT_URL=postgresql://user:password@ep-xxx.region.aws.neon.tech/db?sslmode=require
+#   SMTP_HOST=smtp.gmail.com
+#   SMTP_PORT=587
+#   SMTP_SECURE=false
+#   SMTP_USER=you@gmail.com
+#   SMTP_PASS=your-app-password
 services:
   - type: web
     name: museum-planner
@@ -21,10 +32,24 @@ services:
         value: production
       - key: JWT_SECRET
         generateValue: true
-      # Credentials: fill these two in the Render dashboard after the service
-      # is created (see the note above). `sync: false` keeps them out of the
+      # Credentials: fill these in the Render dashboard after the service is
+      # created (see the note above). `sync: false` keeps them out of the
       # blueprint, so your values are never overwritten on later deploys.
       - key: DATABASE_URL
         sync: false
       - key: DIRECT_URL
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_SECURE
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+      - key: APP_URL
         sync: false

@@ -1,7 +1,9 @@
 import { Router } from 'express';
+import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import prisma from '../db.js';
 import { generateToken, requireAuth } from '../middleware/auth.js';
+import { isMailConfigured, sendPasswordResetEmail } from '../services/mailer.js';
 
 const router = Router();
 
@@ -53,6 +55,82 @@ router.post('/login', async (req, res, next) => {
 
     const token = generateToken(user);
     return res.json({ token, user: publicUser(user) });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+// Request a password reset link (emailed to the account).
+// Responds the same way whether or not the email exists, to avoid revealing
+// which accounts are registered.
+router.post('/forgot-password', async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'email is required' });
+    }
+    if (!isMailConfigured()) {
+      return res.status(503).json({ error: 'Password reset is not configured on this server.' });
+    }
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      return res.json({ message: 'If that email exists, a reset link has been sent.' });
+    }
+
+    const rawToken = crypto.randomBytes(32).toString('hex');
+    const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+    await prisma.passwordResetToken.create({
+      data: { userId: user.id, tokenHash, expiresAt },
+    });
+
+    const appUrl =
+      process.env.APP_URL || process.env.RENDER_EXTERNAL_URL || 'http://localhost:5173';
+    const resetLink = `${appUrl}/reset-password?token=${rawToken}`;
+
+    try {
+      await sendPasswordResetEmail({ to: user.email, resetLink });
+    } catch (err) {
+      // Roll the token back so the user can retry cleanly.
+      await prisma.passwordResetToken.delete({ where: { tokenHash } });
+      throw err;
+    }
+
+    return res.json({ message: 'If that email exists, a reset link has been sent.' });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+// Complete a password reset using a token from the email link.
+router.post('/reset-password', async (req, res, next) => {
+  try {
+    const { token, password } = req.body;
+    if (!token || !password) {
+      return res.status(400).json({ error: 'token and password are required' });
+    }
+    if (password.length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters' });
+    }
+
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    const record = await prisma.passwordResetToken.findUnique({ where: { tokenHash } });
+    if (!record || record.usedAt || record.expiresAt < new Date()) {
+      return res.status(400).json({ error: 'Invalid or expired reset token' });
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    await prisma.$transaction([
+      prisma.user.update({ where: { id: record.userId }, data: { passwordHash } }),
+      prisma.passwordResetToken.updateMany({
+        where: { userId: record.userId, usedAt: null },
+        data: { usedAt: new Date() },
+      }),
+    ]);
+
+    return res.json({ message: 'Password updated. You can now sign in.' });
   } catch (err) {
     return next(err);
   }

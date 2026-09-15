@@ -5,6 +5,8 @@ import Museum from './pages/Museum.jsx';
 import ExhibitDetail from './pages/ExhibitDetail.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
+import ForgotPassword from './pages/ForgotPassword.jsx';
+import ResetPassword from './pages/ResetPassword.jsx';
 import AdminLayout from './pages/admin/AdminLayout.jsx';
 import ManageExhibits from './pages/admin/ManageExhibits.jsx';
 import Tasks from './pages/admin/Tasks.jsx';
@@ -31,6 +33,8 @@ export default function App() {
         <Route path="/exhibits/:id" element={<ExhibitDetail />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         <Route
           path="/admin"

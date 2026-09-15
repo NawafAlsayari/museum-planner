@@ -8,6 +8,7 @@ A personal website that combines a **public "museum"** (a curated gallery of you
 - **Private dashboard** — log in to add, edit, delete exhibits and upload images.
 - **Task planner** — check-off lists with **daily**, **weekly**, and **monthly calendar** views.
 - **Settings** — toggle museum public/private visibility and update your display name.
+- **Password reset** — a "Forgot password" flow that emails a one-time reset link (works when SMTP is configured).
 - **Future-ready** — the data model supports letting other users register and create their own museum.
 
 ## Tech stack
@@ -18,6 +19,7 @@ A personal website that combines a **public "museum"** (a curated gallery of you
 | Backend | Node.js, Express |
 | Database / ORM | PostgreSQL (host on Neon) + Prisma |
 | Auth | JWT + bcrypt |
+| Email | Nodemailer (SMTP) for password-reset emails |
 | Uploads | multer (image bytes stored in Postgres as `BYTEA`) |
 | Tests | Jest + supertest (backend), Vitest + Testing Library (frontend) |
 
@@ -57,9 +59,32 @@ The Vite dev server proxies `/api` and `/uploads` to the backend at `http://loca
 
 > Set `VITE_API_BASE=http://localhost:4000` (or your deployed API URL) when the frontend and API are not on the same origin.
 
+## Password reset
+
+The app ships a "forgot password" flow:
+
+- `POST /api/auth/forgot-password` (email) generates a one-time token and emails a reset link.
+- `GET /reset-password?token=...` is a public page where the user picks a new password.
+- `POST /api/auth/reset-password` (token + new password) sets the password.
+
+To enable it, configure SMTP (Nodemailer). Any SMTP provider works — for Gmail use an **app password**, or use Mailgun / SendGrid / Postmark SMTP credentials. Set these in your `.env` (or the Render dashboard):
+
+```
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=you@example.com
+SMTP_PASS=your-smtp-password
+MAIL_FROM="You <you@example.com>"      # optional, defaults to SMTP_USER
+APP_URL=http://localhost:5173          # optional, defaults to RENDER_EXTERNAL_URL
+```
+
+> If SMTP is not configured, `/api/auth/forgot-password` returns `503`. Reset links expire after 1 hour and can only be used once.
+
 ## API overview
 
 - `POST /api/auth/register`, `POST /api/auth/login`, `GET|PUT /api/auth/me`
+- `POST /api/auth/forgot-password`, `POST /api/auth/reset-password`
 - `GET /api/museum/:username`, `GET /api/museum/exhibit/:id` — public
 - `GET|POST /api/exhibits`, `GET|PUT|DELETE /api/exhibits/:id`, `POST /api/exhibits/:id/image` — private (JWT)
 - `GET /api/tasks?view=daily|weekly|monthly&date=YYYY-MM-DD`, `POST /api/tasks`, `PATCH|PUT|DELETE /api/tasks/:id` — private (JWT)
@@ -87,6 +112,15 @@ DATABASE_URL="postgresql://user:password@host-pooler.region.aws.neon.tech/db?ssl
 DIRECT_URL="postgresql://user:password@host.region.aws.neon.tech/db?sslmode=require"
 JWT_SECRET="change-me-in-production"
 PORT=4000
+
+# Password reset email (SMTP). Leave unset to disable the feature.
+SMTP_HOST="smtp.example.com"
+SMTP_PORT=587
+SMTP_SECURE="false"
+SMTP_USER="you@example.com"
+SMTP_PASS="your-smtp-password"
+MAIL_FROM="You <you@example.com>"
+APP_URL="http://localhost:5173"
 ```
 
 ## Deploying
@@ -106,6 +140,18 @@ the (idempotent) seed (which creates `admin@example.com` / `admin123`), then the
 | `DIRECT_URL` | `postgresql://user:password@ep-xxx.aws.neon.tech/db?sslmode=require` | Migration Postgres (direct) connection (required) |
 | `PORT` | `4000` | Listen port (set automatically by the provider) |
 
+### Optional environment variables (password reset)
+
+| Variable | Example | Purpose |
+|---|---|---|
+| `SMTP_HOST` | `smtp.gmail.com` | SMTP server for reset emails |
+| `SMTP_PORT` | `587` | SMTP port (default 587) |
+| `SMTP_SECURE` | `false` | `true` to use TLS on connect (e.g. port 465) |
+| `SMTP_USER` | `you@gmail.com` | SMTP login |
+| `SMTP_PASS` | an app password | SMTP password |
+| `MAIL_FROM` | `You <you@gmail.com>` | From address (defaults to SMTP_USER) |
+| `APP_URL` | `https://your-app.onrender.com` | Base URL for reset links (defaults to `RENDER_EXTERNAL_URL`) |
+
 > Neon's "connect" page may append `&channel_binding=require` to both strings;
 > that parameter is harmless and supported by Prisma — leave it in place.
 
@@ -118,10 +164,9 @@ tier (no disk needed):
    and **direct** connection strings.
 2. Push this repo to GitHub/GitLab.
 3. In Render: **New → Blueprint**, point it at the repo.
-4. After the service is created, add `DATABASE_URL` and `DIRECT_URL` environment
-   variables in the Render dashboard with your Neon strings, and generate a strong
-   `JWT_SECRET`. (`render.yaml` auto-generates `JWT_SECRET` and lists the two DB
-   vars as fields to fill in.)
+4. After the service is created, add `DATABASE_URL`, `DIRECT_URL` and (optional)
+   `SMTP_*`, `MAIL_FROM`, `APP_URL` environment variables in the Render dashboard
+   with your values, and generate a strong `JWT_SECRET`.
 5. Open the service URL, log in with `admin@example.com` / `admin123`.
 
 > `DIRECT_URL` is **required** — `prisma migrate deploy` refuses to run without it,
@@ -150,5 +195,6 @@ docker compose up --build -d   # starts Postgres + app, serves on http://localho
 - [x] Task planner (daily / weekly / monthly)
 - [x] Image storage in Postgres (no local uploads / disk)
 - [x] Hosted Postgres (Neon) + free-tier Render deployment
+- [x] Password reset via email (SMTP)
 - [ ] Let visitors register and create their own museum
 - [ ] Task recurrence / reminders

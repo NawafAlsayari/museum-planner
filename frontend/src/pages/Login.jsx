@@ -61,6 +61,12 @@ export default function Login() {
         </form>
 
         <p className="text-stone-500 mt-6">
+          <Link to="/forgot-password" className="text-amber-400 hover:text-amber-500">
+            Forgot your password?
+          </Link>
+        </p>
+
+        <p className="text-stone-500 mt-4">
           New here? <Link to="/register" className="text-amber-400 hover:text-amber-500">Create an account</Link>
         </p>
       </div>

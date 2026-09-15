@@ -45,6 +45,14 @@ async function run() {
   // Restore display name
   await request(app).put(`${BASE}/auth/me`).set(auth).send({ displayName: 'Museum Owner' });
 
+  console.log('\nPassword reset (no mail)');
+  const forgotNoEmail = await request(app).post(`${BASE}/auth/forgot-password`).send({});
+  check('forgot-password requires email', forgotNoEmail.status === 400);
+  const resetNoPass = await request(app).post(`${BASE}/auth/reset-password`).send({ token: 'x' });
+  check('reset-password requires password', resetNoPass.status === 400);
+  const resetBadToken = await request(app).post(`${BASE}/auth/reset-password`).send({ token: 'not-a-real-token', password: 'newpassword123' });
+  check('reset-password rejects bad token', resetBadToken.status === 400);
+
   console.log('\nExhibits');
   const create = await request(app).post(`${BASE}/exhibits`).set(auth).send({
     type: 'PROJECT',
