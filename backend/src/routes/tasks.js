@@ -1,46 +1,30 @@
 import { Router } from 'express';
 import prisma from '../db.js';
 import { requireAuth } from '../middleware/auth.js';
+import { toDateTime, dayRangeUtc, weekRangeUtc, monthRangeUtc } from '../utils/date.js';
 
 const router = Router();
 
 router.use(requireAuth);
 
-// Helper: start/end of a day (local server timezone)
-function dayRange(dateStr) {
-  const d = new Date(dateStr);
-  const start = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  const end = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
-  return { start, end };
-}
+const MAX_TITLE = 200;
 
 // List tasks for current user; optional ?view=daily|weekly|monthly&date=YYYY-MM-DD
 router.get('/', async (req, res, next) => {
   try {
     const view = req.query.view || 'daily';
-    let date = req.query.date ? new Date(req.query.date) : new Date();
+    // The frontend always sends a date; fall back to the current UTC day so the
+    // endpoint still works when the param is omitted.
+    const date = req.query.date || new Date().toISOString().slice(0, 10);
 
-    if (isNaN(date.getTime())) {
+    let range;
+    if (view === 'daily') range = dayRangeUtc(date);
+    else if (view === 'weekly') range = weekRangeUtc(date);
+    else if (view === 'monthly') range = monthRangeUtc(date);
+    else return res.status(400).json({ error: 'view must be daily, weekly or monthly' });
+
+    if (!range) {
       return res.status(400).json({ error: 'Invalid date' });
-    }
-
-    let range = { start: null, end: null };
-
-    if (view === 'daily') {
-      range = dayRange(date);
-    } else if (view === 'weekly') {
-      // Start on Monday of the week
-      const d = new Date(date);
-      const day = d.getDay(); // 0 = Sunday
-      const diff = (day + 6) % 7; // days since Monday
-      const start = new Date(d.getFullYear(), d.getMonth(), d.getDate() - diff);
-      range.start = start;
-      range.end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 7);
-    } else if (view === 'monthly') {
-      range.start = new Date(date.getFullYear(), date.getMonth(), 1);
-      range.end = new Date(date.getFullYear(), date.getMonth() + 1, 1);
-    } else {
-      return res.status(400).json({ error: 'view must be daily, weekly or monthly' });
     }
 
     const tasks = await prisma.task.findMany({
@@ -67,12 +51,19 @@ router.post('/', async (req, res, next) => {
     if (!title || !dueDate) {
       return res.status(400).json({ error: 'title and dueDate are required' });
     }
+    if (typeof title !== 'string' || title.trim().length > MAX_TITLE) {
+      return res.status(400).json({ error: `title must be ${MAX_TITLE} characters or fewer` });
+    }
+    const parsed = toDateTime(dueDate);
+    if (!parsed) {
+      return res.status(400).json({ error: 'Invalid dueDate' });
+    }
 
     const task = await prisma.task.create({
       data: {
         userId: req.user.id,
-        title,
-        dueDate: new Date(dueDate),
+        title: title.trim(),
+        dueDate: parsed,
       },
     });
     return res.status(201).json({ task });
@@ -90,11 +81,20 @@ router.patch('/:id', async (req, res, next) => {
     });
     if (!task) return res.status(404).json({ error: 'Task not found' });
 
+    if (title !== undefined && (typeof title !== 'string' || title.trim().length > MAX_TITLE)) {
+      return res.status(400).json({ error: `title must be ${MAX_TITLE} characters or fewer` });
+    }
+    let dateValue = undefined;
+    if (dueDate !== undefined) {
+      dateValue = toDateTime(dueDate);
+      if (!dateValue) return res.status(400).json({ error: 'Invalid dueDate' });
+    }
+
     const updated = await prisma.task.update({
       where: { id: task.id },
       data: {
-        title: title ?? task.title,
-        dueDate: dueDate ? new Date(dueDate) : task.dueDate,
+        title: title !== undefined ? title.trim() : task.title,
+        dueDate: dateValue !== undefined ? dateValue : task.dueDate,
         completed: completed ?? task.completed,
       },
     });
@@ -113,11 +113,20 @@ router.put('/:id', async (req, res, next) => {
     });
     if (!task) return res.status(404).json({ error: 'Task not found' });
 
+    if (title !== undefined && (typeof title !== 'string' || title.trim().length > MAX_TITLE)) {
+      return res.status(400).json({ error: `title must be ${MAX_TITLE} characters or fewer` });
+    }
+    let dateValue = undefined;
+    if (dueDate !== undefined) {
+      dateValue = toDateTime(dueDate);
+      if (!dateValue) return res.status(400).json({ error: 'Invalid dueDate' });
+    }
+
     const updated = await prisma.task.update({
       where: { id: task.id },
       data: {
-        title: title ?? task.title,
-        dueDate: dueDate ? new Date(dueDate) : task.dueDate,
+        title: title !== undefined ? title.trim() : task.title,
+        dueDate: dateValue !== undefined ? dateValue : task.dueDate,
         completed: completed ?? task.completed,
       },
     });

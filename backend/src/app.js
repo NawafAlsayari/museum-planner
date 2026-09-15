@@ -15,18 +15,53 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-app.use(cors());
+// Fail fast if JWT_SECRET is missing in production, otherwise fall back to an
+// obviously-insecure dev secret so local development still boots.
+if (!process.env.JWT_SECRET) {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('JWT_SECRET environment variable is required in production.');
+  }
+  process.env.JWT_SECRET = 'insecure-dev-secret-do-not-use-in-production';
+  console.warn('JWT_SECRET not set; using an insecure development secret.');
+}
+
+// Browser-facing security headers (small enough that we do not need the
+// `helmet` package).
+app.use((req, res, next) => {
+  res.set('X-Content-Type-Options', 'nosniff');
+  res.set('X-Frame-Options', 'DENY');
+  res.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.set('X-DNS-Prefetch-Control', 'off');
+  next();
+});
+
+// CORS is only needed for cross-origin dev setups. On Render the built SPA and
+// the API are served from the same origin, so no CORS headers are required.
+const corsOrigins = (process.env.CORS_ORIGINS || 'http://localhost:5173')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
+app.use(
+  cors({
+    origin(origin, cb) {
+      if (!origin) return cb(null, true); // same-origin requests / curl / tests
+      if (corsOrigins.includes(origin)) return cb(null, true);
+      return cb(null, false);
+    },
+  })
+);
 app.use(express.json());
 
 // Image bytes are served straight from the database; /uploads/:id resolves an
 // exhibit id rather than a filesystem path, so no persistent volume is needed.
+// Images are only served for exhibits that belong to a public museum.
 app.get('/uploads/:id', async (req, res, next) => {
   try {
     const exhibit = await prisma.exhibit.findUnique({
       where: { id: req.params.id },
-      select: { imageData: true, imageMime: true },
+      select: { imageData: true, imageMime: true, user: { select: { isPublic: true } } },
     });
-    if (!exhibit || !exhibit.imageData) {
+    if (!exhibit || !exhibit.imageData || !exhibit.user.isPublic) {
       return res.status(404).end();
     }
     res.set('Content-Type', exhibit.imageMime || 'application/octet-stream');

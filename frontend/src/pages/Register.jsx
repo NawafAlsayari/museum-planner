@@ -28,10 +28,18 @@ export default function Register() {
   }
 
   const fields = [
-    { key: 'displayName', label: 'Display name', type: 'text' },
-    { key: 'username', label: 'Username', type: 'text' },
+    { key: 'displayName', label: 'Display name', type: 'text', maxLength: 60 },
+    {
+      key: 'username',
+      label: 'Username',
+      type: 'text',
+      minLength: 3,
+      maxLength: 30,
+      pattern: '[A-Za-z0-9_-]+',
+      title: '3-30 characters: letters, numbers, _ or -',
+    },
     { key: 'email', label: 'Email', type: 'email' },
-    { key: 'password', label: 'Password', type: 'password' },
+    { key: 'password', label: 'Password', type: 'password', minLength: 8 },
   ];
 
   return (
@@ -53,6 +61,10 @@ export default function Register() {
                 value={form[f.key]}
                 onChange={update(f.key)}
                 required
+                minLength={f.minLength}
+                maxLength={f.maxLength}
+                pattern={f.pattern}
+                title={f.title}
                 className="w-full pixel-input"
               />
             </div>

@@ -4,20 +4,46 @@ import bcrypt from 'bcryptjs';
 import prisma from '../db.js';
 import { generateToken, requireAuth } from '../middleware/auth.js';
 import { isMailConfigured, sendPasswordResetEmail } from '../services/mailer.js';
+import makeRateLimit from '../middleware/rateLimit.js';
 
 const router = Router();
 
-// Register a new user (future multi-user support; also used in seed/tests)
-router.post('/register', async (req, res, next) => {
-  try {
-    const { email, password, displayName, username } = req.body;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const USERNAME_RE = /^[a-zA-Z0-9_-]{3,30}$/;
+const MIN_PASSWORD = 8;
+const MAX_DISPLAY_NAME = 60;
 
+const loginLimiter = makeRateLimit({ windowMs: 15 * 60 * 1000, max: 10, name: 'login' });
+const registerLimiter = makeRateLimit({ windowMs: 60 * 60 * 1000, max: 5, name: 'register' });
+const forgotLimiter = makeRateLimit({ windowMs: 60 * 60 * 1000, max: 5, name: 'forgot' });
+const resetLimiter = makeRateLimit({ windowMs: 60 * 60 * 1000, max: 10, name: 'reset' });
+
+// Register a new user (future multi-user support; also used in seed/tests)
+router.post('/register', registerLimiter, async (req, res, next) => {
+  try {
+    if (process.env.ALLOW_REGISTRATION === 'false') {
+      return res.status(403).json({ error: 'Registration is disabled on this server.' });
+    }
+
+    const { email, password, displayName, username } = req.body;
     if (!email || !password || !displayName || !username) {
       return res.status(400).json({ error: 'email, password, displayName and username are required' });
     }
+    if (typeof email !== 'string' || !EMAIL_RE.test(email.trim())) {
+      return res.status(400).json({ error: 'A valid email is required' });
+    }
+    if (typeof username !== 'string' || !USERNAME_RE.test(username.trim())) {
+      return res.status(400).json({ error: 'username must be 3-30 characters (letters, numbers, _ or -)' });
+    }
+    if (typeof password !== 'string' || password.length < MIN_PASSWORD) {
+      return res.status(400).json({ error: `Password must be at least ${MIN_PASSWORD} characters` });
+    }
+    if (typeof displayName !== 'string' || displayName.trim().length > MAX_DISPLAY_NAME) {
+      return res.status(400).json({ error: `displayName must be ${MAX_DISPLAY_NAME} characters or fewer` });
+    }
 
     const existing = await prisma.user.findFirst({
-      where: { OR: [{ email }, { username }] },
+      where: { OR: [{ email: email.trim() }, { username: username.trim() }] },
     });
     if (existing) {
       return res.status(409).json({ error: 'Email or username already in use' });
@@ -25,7 +51,7 @@ router.post('/register', async (req, res, next) => {
 
     const passwordHash = await bcrypt.hash(password, 10);
     const user = await prisma.user.create({
-      data: { email, passwordHash, displayName, username },
+      data: { email: email.trim(), passwordHash, displayName: displayName.trim(), username: username.trim() },
     });
 
     const token = generateToken(user);
@@ -36,7 +62,7 @@ router.post('/register', async (req, res, next) => {
 });
 
 // Login
-router.post('/login', async (req, res, next) => {
+router.post('/login', loginLimiter, async (req, res, next) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
@@ -63,7 +89,7 @@ router.post('/login', async (req, res, next) => {
 // Request a password reset link (emailed to the account).
 // Responds the same way whether or not the email exists, to avoid revealing
 // which accounts are registered.
-router.post('/forgot-password', async (req, res, next) => {
+router.post('/forgot-password', forgotLimiter, async (req, res, next) => {
   try {
     const { email } = req.body;
     if (!email) {
@@ -105,7 +131,7 @@ router.post('/forgot-password', async (req, res, next) => {
 });
 
 // Complete a password reset using a token from the email link.
-router.post('/reset-password', async (req, res, next) => {
+router.post('/reset-password', resetLimiter, async (req, res, next) => {
   try {
     const { token, password } = req.body;
     if (!token || !password) {

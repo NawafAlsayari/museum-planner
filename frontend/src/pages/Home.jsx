@@ -3,6 +3,10 @@ import { Link } from 'react-router-dom';
 import api from '../api.js';
 import ExhibitCard from '../components/ExhibitCard.jsx';
 
+// Public museum to feature on the homepage. Override with VITE_MUSEUM_USERNAME
+// if your public username is not "admin".
+const MUSEUM_USERNAME = import.meta.env.VITE_MUSEUM_USERNAME || 'admin';
+
 const FEATURES = [
   { icon: '📷', title: 'PHOTOS', desc: 'Remember important moments and places.' },
   { icon: '🛠️', title: 'PROJECTS', desc: 'Showcase what you have built and are building.' },
@@ -15,9 +19,9 @@ export default function Home() {
 
   useEffect(() => {
     api
-      .get('/api/museum/admin')
+      .get(`/api/museum/${MUSEUM_USERNAME}`)
       .then((res) => setMuseum(res.data))
-      .catch(() => setError('Museum not found. Try /museum/:username.'));
+      .catch(() => setError('Featured exhibits are not available right now.'));
   }, []);
 
   return (
@@ -32,7 +36,7 @@ export default function Home() {
             A curated space for photos, projects, and achievements — plus a daily, weekly, and monthly task planner.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <Link to="/museum/admin" className="pixel-btn">
+            <Link to={`/museum/${MUSEUM_USERNAME}`} className="pixel-btn">
               VISIT THE MUSEUM
             </Link>
             <Link
@@ -48,7 +52,7 @@ export default function Home() {
       <section className="max-w-6xl mx-auto px-4 py-12">
         <div className="flex items-center justify-between mb-6">
           <h2 className="font-serif text-2xl text-stone-700 uppercase">Featured Exhibits</h2>
-          <Link to="/museum/admin" className="text-amber-400 text-sm font-pixel hover:text-amber-500">
+          <Link to={`/museum/${MUSEUM_USERNAME}`} className="text-amber-400 text-sm font-pixel hover:text-amber-500">
             VIEW ALL →
           </Link>
         </div>

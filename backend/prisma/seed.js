@@ -89,10 +89,11 @@ async function main() {
   const taskCount = await prisma.task.count({ where: { userId: admin.id } });
   if (taskCount === 0) {
     const today = new Date();
+    const noonUtc = (offsetDays) => new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() + offsetDays, 12, 0, 0));
     const tasks = [
-      { title: 'Review museum exhibits', dueDate: new Date(today.getFullYear(), today.getMonth(), today.getDate()), completed: false },
-      { title: 'Add a new photo', dueDate: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1), completed: false },
-      { title: 'Weekly planning review', dueDate: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 7), completed: false },
+      { title: 'Review museum exhibits', dueDate: noonUtc(0), completed: false },
+      { title: 'Add a new photo', dueDate: noonUtc(1), completed: false },
+      { title: 'Weekly planning review', dueDate: noonUtc(7), completed: false },
     ];
     for (const t of tasks) {
       await prisma.task.create({

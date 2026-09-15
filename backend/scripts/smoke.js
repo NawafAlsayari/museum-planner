@@ -84,7 +84,7 @@ async function run() {
     .post(`${BASE}/exhibits/${exhibitId}/image`)
     .set(auth)
     .attach('image', png, { filename: 'test.png', contentType: 'image/png' });
-  check('upload exhibit image works', upload.status === 200 && upload.body.exhibit.imageUrl === `/uploads/${exhibitId}`);
+  check('upload exhibit image works', upload.status === 200 && upload.body.exhibit.imageUrl.startsWith(`/uploads/${exhibitId}`));
   check('image upload does not leak bytes in JSON', !('imageData' in upload.body.exhibit) && !('imageMime' in upload.body.exhibit));
 
   const served = await request(app)

@@ -2,8 +2,11 @@ import { Router } from 'express';
 import multer from 'multer';
 import prisma from '../db.js';
 import { requireAuth } from '../middleware/auth.js';
+import { toDateTime, isValidDateValue } from '../utils/date.js';
 
 const VALID_TYPES = ['PHOTO', 'PROJECT', 'ACHIEVEMENT'];
+const MAX_TITLE = 120;
+const MAX_DESCRIPTION = 5000;
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -72,14 +75,23 @@ router.post('/', async (req, res, next) => {
     if (!VALID_TYPES.includes(type)) {
       return res.status(400).json({ error: `type must be one of: ${VALID_TYPES.join(', ')}` });
     }
+    if (typeof title !== 'string' || title.trim().length > MAX_TITLE) {
+      return res.status(400).json({ error: `title must be ${MAX_TITLE} characters or fewer` });
+    }
+    if (description && typeof description === 'string' && description.length > MAX_DESCRIPTION) {
+      return res.status(400).json({ error: `description must be ${MAX_DESCRIPTION} characters or fewer` });
+    }
+    if (!isValidDateValue(date)) {
+      return res.status(400).json({ error: 'Invalid date' });
+    }
 
     const exhibit = await prisma.exhibit.create({
       data: {
         userId: req.user.id,
         type,
-        title,
+        title: title.trim(),
         description: description || '',
-        date: date ? new Date(date) : null,
+        date: toDateTime(date),
       },
       select: exhibitSelect,
     });
@@ -100,10 +112,12 @@ router.post('/:id/image', upload.single('image'), async (req, res, next) => {
     });
     if (!exhibit) return res.status(404).json({ error: 'Exhibit not found' });
 
+    // Include a version query in the URL so an updated image bypasses the
+    // long-lived browser cache instead of serving stale bytes for a year.
     const updated = await prisma.exhibit.update({
       where: { id: exhibit.id },
       data: {
-        imageUrl: `/uploads/${exhibit.id}`,
+        imageUrl: `/uploads/${exhibit.id}?v=${Date.now()}`,
         imageData: req.file.buffer,
         imageMime: req.file.mimetype,
       },
@@ -122,6 +136,15 @@ router.put('/:id', async (req, res, next) => {
     if (type && !VALID_TYPES.includes(type)) {
       return res.status(400).json({ error: `type must be one of: ${VALID_TYPES.join(', ')}` });
     }
+    if (title !== undefined && (typeof title !== 'string' || title.trim().length > MAX_TITLE)) {
+      return res.status(400).json({ error: `title must be ${MAX_TITLE} characters or fewer` });
+    }
+    if (description && typeof description === 'string' && description.length > MAX_DESCRIPTION) {
+      return res.status(400).json({ error: `description must be ${MAX_DESCRIPTION} characters or fewer` });
+    }
+    if (date !== undefined && !isValidDateValue(date)) {
+      return res.status(400).json({ error: 'Invalid date' });
+    }
 
     const exhibit = await prisma.exhibit.findFirst({
       where: { id: req.params.id, userId: req.user.id },
@@ -133,9 +156,9 @@ router.put('/:id', async (req, res, next) => {
       where: { id: exhibit.id },
       data: {
         type: type || undefined,
-        title: title ?? undefined,
-        description: description ?? undefined,
-        date: date ? new Date(date) : undefined,
+        title: title !== undefined ? title.trim() : undefined,
+        description: description !== undefined ? description : undefined,
+        date: date !== undefined ? toDateTime(date) : undefined,
       },
       select: exhibitSelect,
     });

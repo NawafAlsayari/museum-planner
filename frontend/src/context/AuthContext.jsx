@@ -31,6 +31,16 @@ export function AuthProvider({ children }) {
     }
   }, [refreshUser]);
 
+  // When the API reports an expired/invalid token mid-session, clear the
+  // in-memory user so protected routes navigate to /login.
+  useEffect(() => {
+    function onUnauthorized() {
+      setUser(null);
+    }
+    window.addEventListener('auth:unauthorized', onUnauthorized);
+    return () => window.removeEventListener('auth:unauthorized', onUnauthorized);
+  }, []);
+
   async function login(email, password) {
     const res = await api.post('/api/auth/login', { email, password });
     localStorage.setItem('token', res.data.token);

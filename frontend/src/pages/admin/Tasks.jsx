@@ -8,7 +8,9 @@ const VIEWS = [
 ];
 
 function fmt(d) {
-  return d.toISOString().slice(0, 10);
+  // Format the local calendar date so a task/date input never slips a day
+  // across timezones (toISOString() uses UTC and can shift the day).
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 function startOfDay(d) {
@@ -157,7 +159,7 @@ export default function Tasks() {
       </div>
 
       <div className="pixel-panel p-4 mb-6 flex items-center gap-3 flex-wrap">
-        <button onClick={() => shiftDate(-1)} className="pixel-btn pixel-btn--secondary text-[0.6rem]">
+        <button onClick={() => shiftDate(-1)} aria-label="Previous" className="pixel-btn pixel-btn--secondary text-[0.6rem]">
           ◀
         </button>
         <input
@@ -169,7 +171,7 @@ export default function Tasks() {
           }}
           className="pixel-input text-sm"
         />
-        <button onClick={() => shiftDate(1)} className="pixel-btn pixel-btn--secondary text-[0.6rem]">
+        <button onClick={() => shiftDate(1)} aria-label="Next" className="pixel-btn pixel-btn--secondary text-[0.6rem]">
           ▶
         </button>
         <span className="text-sm text-stone-400 ml-auto">

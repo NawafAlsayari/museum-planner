@@ -1,5 +1,16 @@
 # 🏛️ My Museum & Planner
 
+<p align="center">
+  <img alt="React" src="https://img.shields.io/badge/React-18-61dafb?logo=react&logoColor=white">
+  <img alt="Vite" src="https://img.shields.io/badge/Vite-6-646cff?logo=vite&logoColor=white">
+  <img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind_CSS-4-38bdf8?logo=tailwindcss&logoColor=white">
+  <img alt="Node.js" src="https://img.shields.io/badge/Node.js-20-339933?logo=node.js&logoColor=white">
+  <img alt="Express" src="https://img.shields.io/badge/Express-4-000000">
+  <img alt="PostgreSQL" src="https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql&logoColor=white">
+  <img alt="Prisma" src="https://img.shields.io/badge/Prisma-5-2d3748?logo=prisma&logoColor=white">
+  <img alt="Docker" src="https://img.shields.io/badge/Docker-deploy-2496ed?logo=docker&logoColor=white">
+</p>
+
 A personal website that combines a **public "museum"** (a curated gallery of your photos, projects, and achievements) with a **private dashboard** to manage it, plus a **task planner** with daily, weekly, and monthly views.
 
 ## Features
@@ -41,11 +52,11 @@ cd backend
 npm install
 cp .env.example .env   # then set DATABASE_URL + DIRECT_URL to your Neon strings
 npm run prisma:migrate   # applies migrations to your Postgres DB
-npm run prisma:seed      # seeds admin user + sample data (admin@example.com / admin123)
+npm run prisma:seed      # seeds admin user + sample data
 npm run dev              # starts API on http://localhost:4000
 ```
 
-Seed credentials: **admin@example.com** / **admin123**
+Seed credentials: **admin@example.com** / **admin123** (override with `SEED_EMAIL`, `SEED_USERNAME`, `SEED_PASSWORD`).
 
 ### 2. Frontend
 
@@ -113,6 +124,11 @@ DIRECT_URL="postgresql://user:password@host.region.aws.neon.tech/db?sslmode=requ
 JWT_SECRET="change-me-in-production"
 PORT=4000
 
+# Optional — seed admin account defaults. Set SEED_PASSWORD to avoid the default 'admin123'.
+# SEED_EMAIL="admin@example.com"
+# SEED_USERNAME="admin"
+# SEED_PASSWORD="a-strong-password"
+
 # Password reset email (SMTP). Leave unset to disable the feature.
 SMTP_HOST="smtp.example.com"
 SMTP_PORT=587
@@ -129,7 +145,8 @@ The app ships as a **single Docker container** that hosts both the Express API a
 the built React app (Express serves `frontend/dist` and falls back to `index.html`
 for client-side routes). Data (DB rows **and** image bytes) lives in Postgres, so
 no persistent disk is required. The container runs `prisma migrate deploy`, then
-the (idempotent) seed (which creates `admin@example.com` / `admin123`), then the API.
+the (idempotent) seed (which creates the admin account; defaults to
+`admin@example.com` / `admin123` unless `SEED_*` are set), then the API.
 
 ### Required environment variables
 
@@ -140,10 +157,13 @@ the (idempotent) seed (which creates `admin@example.com` / `admin123`), then the
 | `DIRECT_URL` | `postgresql://user:password@ep-xxx.aws.neon.tech/db?sslmode=require` | Migration Postgres (direct) connection (required) |
 | `PORT` | `4000` | Listen port (set automatically by the provider) |
 
-### Optional environment variables (password reset)
+### Optional environment variables (admin seed & password reset)
 
 | Variable | Example | Purpose |
 |---|---|---|
+| `SEED_EMAIL` | `admin@example.com` | Admin login email (default `admin@example.com`) |
+| `SEED_USERNAME` | `admin` | Public museum username (default `admin`) |
+| `SEED_PASSWORD` | a strong password | Admin password; if unset the seed uses `admin123` |
 | `SMTP_HOST` | `smtp.gmail.com` | SMTP server for reset emails |
 | `SMTP_PORT` | `587` | SMTP port (default 587) |
 | `SMTP_SECURE` | `false` | `true` to use TLS on connect (e.g. port 465) |
@@ -164,10 +184,11 @@ tier (no disk needed):
    and **direct** connection strings.
 2. Push this repo to GitHub/GitLab.
 3. In Render: **New → Blueprint**, point it at the repo.
-4. After the service is created, add `DATABASE_URL`, `DIRECT_URL` and (optional)
-   `SMTP_*`, `MAIL_FROM`, `APP_URL` environment variables in the Render dashboard
-   with your values, and generate a strong `JWT_SECRET`.
-5. Open the service URL, log in with `admin@example.com` / `admin123`.
+4. After the service is created, add `DATABASE_URL`, `DIRECT_URL`, `JWT_SECRET`
+   and (optional) `SMTP_*`, `SEED_*`, `MAIL_FROM`, `APP_URL` environment variables
+   in the Render dashboard with your values. Set `SEED_PASSWORD` and `JWT_SECRET`
+   to strong values.
+5. Open the service URL, log in with the admin credentials.
 
 > `DIRECT_URL` is **required** — `prisma migrate deploy` refuses to run without it,
 > and Neon's direct connection can cold-start, so the container retries the

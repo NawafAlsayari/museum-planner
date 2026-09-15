@@ -1,0 +1,627 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Museum Walk — Design Mockup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet" />
+  <style>
+    /* ============ TOKENS (match the app's pixel palette) ============ */
+    :root {
+      --bg: #06060a;
+      --wall: #101018;
+      --panel: #171722;
+      --panel-hi: #23232e;
+      --text: #e2e2ec;
+      --muted: #b4b4c4;
+      --dim: #9d9db0;
+      --amber: #ffb000;
+      --amber-hi: #ffc400;
+      --photo: #4fc3ff;
+      --project: #2fbf6b;
+      --achieve: #ffb000;
+      --focus: #ffcf40;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; border-radius: 0 !important; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'VT323', monospace;
+      font-size: 1.2rem;
+      line-height: 1.4;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: none;
+    }
+
+    h1, h2, h3, .serif { font-family: 'VT323', monospace; letter-spacing: 0.02em; }
+    button, .pixel { font-family: 'Press Start 2P', monospace; }
+
+    ::selection { background: var(--amber); color: var(--bg); }
+
+    /* Monitor glow behind everything, like walking through a dark gallery */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(ellipse at 50% 20%, rgba(255,176,0,0.06), transparent 55%),
+                  radial-gradient(ellipse at 50% 100%, rgba(79,195,255,0.05), transparent 55%);
+      z-index: 0;
+    }
+
+    /* ============ ACCESSIBILITY: high-contrast focus states ============ */
+    :focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 3px;
+      box-shadow: 0 0 0 5px rgba(255,207,64,0.25);
+    }
+
+    /* ============ SKIP LINK ============ */
+    .skip-link {
+      position: absolute;
+      left: -9999px;
+      top: 0;
+      z-index: 1000;
+      background: var(--amber);
+      color: var(--bg);
+      padding: 0.7rem 1rem;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      text-decoration: none;
+    }
+    .skip-link:focus { left: 8px; top: 8px; }
+
+    /* ============ MOCKUP BADGE ============ */
+    .mockup-badge {
+      position: fixed;
+      top: 0.6rem;
+      right: 0.6rem;
+      z-index: 500;
+      background: var(--panel-hi);
+      border: 2px solid var(--amber);
+      color: var(--amber);
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.5rem;
+      padding: 0.5rem 0.6rem;
+      text-transform: uppercase;
+      box-shadow: 0 3px 0 rgba(0,0,0,0.5);
+      max-width: 11rem;
+      text-align: center;
+    }
+
+    /* ============ TOP BAR ============ */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.8rem 1rem;
+      background: rgba(16,16,24,0.95);
+      border-bottom: 3px solid var(--amber);
+      backdrop-filter: blur(4px);
+    }
+    .topbar .brand {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.6rem;
+      color: var(--text);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .topbar .brand span { color: var(--amber); }
+    .topbar .exit {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.55rem;
+      color: var(--muted);
+      text-decoration: none;
+      text-transform: uppercase;
+    }
+    .topbar .exit:hover { color: var(--amber); }
+
+    /* ============ LOBBY / HERO ============ */
+    .lobby {
+      position: relative;
+      z-index: 1;
+      min-height: 78vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 3rem 1rem 4rem;
+      border-bottom: 6px double var(--panel-hi);
+    }
+    .lobby .kicker {
+      color: var(--amber);
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      margin-bottom: 1.2rem;
+    }
+    .lobby h1 {
+      font-size: clamp(2.2rem, 8vw, 4.6rem);
+      color: var(--text);
+      text-transform: uppercase;
+      line-height: 0.95;
+      max-width: 16ch;
+      text-shadow: 0 4px 0 rgba(0,0,0,0.6);
+    }
+    .lobby p.sub {
+      color: var(--muted);
+      max-width: 44ch;
+      margin: 1.2rem auto 2rem;
+    }
+    .enter-btn {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      padding: 1rem 1.6rem;
+      color: var(--bg);
+      background: var(--amber);
+      border: 0;
+      box-shadow: 0 5px 0 rgba(0,0,0,0.7);
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 60ms linear, box-shadow 60ms linear, background 60ms linear;
+    }
+    .enter-btn:hover { background: var(--amber-hi); }
+    .enter-btn:active { transform: translateY(5px); box-shadow: 0 0 0 rgba(0,0,0,0.7); }
+
+    .lobby .footdots {
+      display: flex;
+      gap: 0.7rem;
+      margin-top: 3rem;
+      align-items: center;
+    }
+    .lobby .footdots a {
+      color: var(--dim);
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.5rem;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 0.35rem 0.5rem;
+    }
+    .lobby .footdots a:hover { color: var(--amber); }
+
+    /* ============ GALLERY / ROOMS ============ */
+    .gallery {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1rem 7rem;
+    }
+
+    .room-head {
+      text-align: center;
+      margin-bottom: 2.2rem;
+    }
+    .room-head .hall-sign {
+      display: inline-block;
+      background: var(--panel);
+      border: 3px solid var(--amber);
+      box-shadow: 0 5px 0 rgba(0,0,0,0.6);
+      padding: 0.7rem 1.3rem;
+      margin-bottom: 1rem;
+    }
+    .room-head .hall-sign h2 {
+      font-size: clamp(1.3rem, 4vw, 2rem);
+      text-transform: uppercase;
+      color: var(--text);
+    }
+    .room-head .hall-sign small {
+      display: block;
+      color: var(--amber);
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.5rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-top: 0.4rem;
+    }
+    .room-head p {
+      color: var(--muted);
+      max-width: 52ch;
+      margin: 0 auto;
+    }
+
+    /* Floor-progress map */
+    .floor-map {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.9rem;
+      margin: 1.6rem auto 2.4rem;
+      flex-wrap: wrap;
+    }
+    .floor-map .dot {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--dim);
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.5rem;
+      text-transform: uppercase;
+    }
+    .floor-map .dot .puck {
+      width: 14px;
+      height: 14px;
+      background: var(--panel-hi);
+      border: 2px solid var(--dim);
+    }
+    .floor-map .dot.active { color: var(--amber); }
+    .floor-map .dot.active .puck { background: var(--amber); border-color: var(--amber); box-shadow: 0 0 12px var(--amber); }
+
+    /* The wall of framed exhibits */
+    .room {
+      animation: roomIn 320ms ease;
+    }
+    @keyframes roomIn {
+      from { opacity: 0; transform: translateX(24px); }
+      to { opacity: 1; transform: none; }
+    }
+
+    .wall {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.6rem;
+    }
+
+    /* Framed exhibit */
+    .frame {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      background: var(--wall);
+      border: 2px solid var(--panel-hi);
+      box-shadow: 0 6px 0 rgba(0,0,0,0.55);
+      position: relative;
+      transition: transform 90ms ease, box-shadow 90ms ease, border-color 90ms ease;
+    }
+    .frame:hover {
+      transform: translateY(-5px);
+      border-color: var(--amber);
+      box-shadow: 0 0 0 2px var(--amber), 0 8px 0 rgba(0,0,0,0.55);
+    }
+    .frame:hover .plaque h3 { color: var(--amber); }
+
+    .canvas {
+      aspect-ratio: 4 / 3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+      border-bottom: 3px solid var(--panel-hi);
+    }
+    /* spotlight behind each artwork */
+    .canvas::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 40%, rgba(255,255,255,0.10), transparent 62%);
+      pointer-events: none;
+    }
+    .canvas .art {
+      font-size: clamp(3rem, 10vw, 5rem);
+      filter: drop-shadow(0 6px 8px rgba(0,0,0,0.5));
+      /* image-rendering gut: keep emoji crisp */
+      line-height: 1;
+    }
+    .canvas.type-photo { background: linear-gradient(160deg, #0c2833, #14303f 45%, #0a1c26); }
+    .canvas.type-project { background: linear-gradient(160deg, #0b2417, #14402a 45%, #08160f); }
+    .canvas.type-achieve { background: linear-gradient(160deg, #2a2406, #3d3308 45%, #1e1806); }
+
+    .plaque {
+      padding: 0.9rem 1rem 1.1rem;
+      background: var(--panel);
+      position: relative;
+    }
+    /* gold plaque line */
+    .plaque::before {
+      content: "";
+      position: absolute;
+      left: 1rem;
+      right: 1rem;
+      top: 0;
+      height: 3px;
+      background: var(--amber);
+      opacity: 0.7;
+    }
+    .plaque h3 {
+      font-size: 1.25rem;
+      text-transform: uppercase;
+      color: var(--text);
+      transition: color 90ms ease;
+    }
+    .plaque .meta {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-top: 0.5rem;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.5rem;
+      text-transform: uppercase;
+    }
+    .meta .tag { padding: 0.3rem 0.45rem; border: 2px solid var(--bg); box-shadow: 0 2px 0 rgba(0,0,0,0.6); }
+    .tag.photo { background: var(--photo); color: #06131a; }
+    .tag.project { background: var(--project); color: #06130a; }
+    .tag.achieve { background: var(--achieve); color: #241a02; }
+    .meta .year { color: var(--dim); }
+    .plaque p.desc { color: var(--muted); font-size: 1.05rem; margin-top: 0.6rem; }
+
+    /* ============ TOUR CONTROLS (walk forward / back) ============ */
+    .tour {
+      position: sticky;
+      bottom: 0;
+      z-index: 300;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.8rem;
+      margin-top: 3rem;
+      padding: 0.9rem 1rem;
+      background: rgba(16,16,24,0.96);
+      border-top: 3px solid var(--amber);
+      backdrop-filter: blur(4px);
+    }
+    .tour .arrow {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.55rem;
+      text-transform: uppercase;
+      color: var(--bg);
+      background: var(--amber);
+      border: 0;
+      padding: 0.85rem 1rem;
+      box-shadow: 0 4px 0 rgba(0,0,0,0.7);
+      cursor: pointer;
+      transition: transform 60ms linear, box-shadow 60ms linear, background 60ms linear;
+      min-width: 6rem;
+    }
+    .tour .arrow.secondary { background: var(--panel-hi); color: var(--text); }
+    .tour .arrow:hover:not(:disabled) { background: var(--amber-hi); }
+    .tour .arrow.secondary:hover:not(:disabled) { background: #2c2c3a; }
+    .tour .arrow:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 0 0 rgba(0,0,0,0.7); }
+    .tour .arrow:disabled { opacity: 0.35; cursor: not-allowed; }
+    .tour .reading {
+      text-align: center;
+      color: var(--dim);
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.5rem;
+      text-transform: uppercase;
+      line-height: 1.6;
+    }
+    .tour .reading strong { color: var(--amber); }
+
+    /* ============ RESPONSIVE / MOBILE ============ */
+    @media (max-width: 640px) {
+      body { font-size: 1.1rem; }
+      .lobby { min-height: 82vh; padding: 2.5rem 1rem 3rem; }
+      .topbar .brand { font-size: 0.5rem; max-width: 62ch; }
+      .wall { grid-template-columns: 1fr; gap: 1.4rem; }
+      .tour .arrow { min-width: 0; padding: 0.9rem 1.1rem; }
+      .tour .reading { font-size: 0.45rem; }
+      .mockup-badge { top: auto; bottom: 4.6rem; right: 0.5rem; font-size: 0.45rem; max-width: 9rem; }
+      .floor-map { gap: 0.6rem; }
+      .floor-map .dot { font-size: 0.45rem; }
+    }
+
+    /* ============ REDUCED MOTION ============ */
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .room { animation: none; }
+      .frame { transition: none; }
+      .frame:hover { transform: none; }
+      .enter-btn, .tour .arrow { transition: none; }
+      .enter-btn:active, .tour .arrow:active:not(:disabled) { transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to the exhibits</a>
+  <div class="mockup-badge" role="status">DESIGN MOCKUP — Not the live app</div>
+
+  <!-- ===== TOP BAR ===== -->
+  <header class="topbar">
+    <a class="brand" href="#lobby">My<span>Museum</span> &amp; Planner</a>
+    <a class="exit" href="#lobby" aria-label="Exit the tour and go back to the lobby">Exit Tour</a>
+  </header>
+
+  <main id="main">
+    <!-- ===== LOBBY ===== -->
+    <section id="lobby" class="lobby">
+      <p class="kicker">A Personal Digital Gallery</p>
+      <h1>Step inside and walk the halls</h1>
+      <p class="sub">
+        Every photo, project, and achievement is a room in this museum.
+        Follow the tour, stop at the frames, and read the plaques.
+      </p>
+      <a class="enter-btn" href="#gallery" id="enterTour">Enter the Museum →</a>
+
+      <nav class="footdots" aria-label="Skip to a hall">
+        <a href="#gallery" data-room="all">1 · Lobby</a>
+        <a href="#gallery" data-room="photo">2 · Photos</a>
+        <a href="#gallery" data-room="project">3 · Projects</a>
+        <a href="#gallery" data-room="achieve">4 · Achievements</a>
+      </nav>
+    </section>
+
+    <!-- ===== MUSEUM WALK ===== -->
+    <section id="gallery" class="gallery" aria-label="Museum galleries">
+      <div class="room-head">
+        <div class="hall-sign">
+          <h2 id="roomTitle">The Lobby — All Exhibits</h2>
+          <small id="roomHint">Hall 1 of 4</small>
+        </div>
+        <p id="roomDesc">Everything on display, from front door to back wall.</p>
+      </div>
+
+      <!-- Floor progress -->
+      <nav class="floor-map" id="floorMap" aria-label="Tour progress">
+        <span class="dot active" data-room="all"><span class="puck" aria-hidden="true"></span> Lobby</span>
+        <span class="dot" data-room="photo"><span class="puck" aria-hidden="true"></span> Photos</span>
+        <span class="dot" data-room="project"><span class="puck" aria-hidden="true"></span> Projects</span>
+        <span class="dot" data-room="achieve"><span class="puck" aria-hidden="true"></span> Awards</span>
+      </nav>
+
+      <!-- Walls (one visible at a time) -->
+      <div id="walls">
+        <div class="room" data-room="all">
+          <div class="wall">
+            <a class="frame" href="#gallery">
+              <div class="canvas type-photo"><span class="art" role="img" aria-label="Photograph artwork">📷</span></div>
+              <div class="plaque">
+                <h3>Workspace</h3>
+                <div class="meta"><span class="tag photo">Photo</span><span class="year">2026</span></div>
+                <p class="desc">A snapshot of the desk where the work happens.</p>
+              </div>
+            </a>
+            <a class="frame" href="#gallery">
+              <div class="canvas type-project"><span class="art" role="img" aria-label="Project artwork">🛠️</span></div>
+              <div class="plaque">
+                <h3>Museum &amp; Planner</h3>
+                <div class="meta"><span class="tag project">Project</span><span class="year">2026</span></div>
+                <p class="desc">A personal site combining a curated museum and a task planner.</p>
+              </div>
+            </a>
+            <a class="frame" href="#gallery">
+              <div class="canvas type-achieve"><span class="art" role="img" aria-label="Achievement artwork">🏆</span></div>
+              <div class="plaque">
+                <h3>First Launch</h3>
+                <div class="meta"><span class="tag achieve">Achievement</span><span class="year">2026</span></div>
+                <p class="desc">The moment this personal museum went live.</p>
+              </div>
+            </a>
+          </div>
+        </div>
+
+        <div class="room" data-room="photo" hidden>
+          <div class="wall">
+            <a class="frame" href="#gallery">
+              <div class="canvas type-photo"><span class="art" role="img" aria-label="Photograph artwork">📷</span></div>
+              <div class="plaque"><h3>Workspace</h3><div class="meta"><span class="tag photo">Photo</span><span class="year">2026</span></div><p class="desc">A snapshot of the desk where the work happens.</p></div>
+            </a>
+            <a class="frame" href="#gallery">
+              <div class="canvas type-photo"><span class="art" role="img" aria-label="Photograph artwork">🌅</span></div>
+              <div class="plaque"><h3>Golden Hour</h3><div class="meta"><span class="tag photo">Photo</span><span class="year">2025</span></div><p class="desc">A photograph captured at the end of the day.</p></div>
+            </a>
+          </div>
+        </div>
+
+        <div class="room" data-room="project" hidden>
+          <div class="wall">
+            <a class="frame" href="#gallery">
+              <div class="canvas type-project"><span class="art" role="img" aria-label="Project artwork">🛠️</span></div>
+              <div class="plaque"><h3>Museum &amp; Planner</h3><div class="meta"><span class="tag project">Project</span><span class="year">2026</span></div><p class="desc">A personal site combining a curated museum and a task planner.</p></div>
+            </a>
+            <a class="frame" href="#gallery">
+              <div class="canvas type-project"><span class="art" role="img" aria-label="Project artwork">⚙️</span></div>
+              <div class="plaque"><h3>Engine Room</h3><div class="meta"><span class="tag project">Project</span><span class="year">2025</span></div><p class="desc">A small utility that automates the boring bits.</p></div>
+            </a>
+          </div>
+        </div>
+
+        <div class="room" data-room="achieve" hidden>
+          <div class="wall">
+            <a class="frame" href="#gallery">
+              <div class="canvas type-achieve"><span class="art" role="img" aria-label="Achievement artwork">🏆</span></div>
+              <div class="plaque"><h3>First Launch</h3><div class="meta"><span class="tag achieve">Achievement</span><span class="year">2026</span></div><p class="desc">The moment this personal museum went live.</p></div>
+            </a>
+            <a class="frame" href="#gallery">
+              <div class="canvas type-achieve"><span class="art" role="img" aria-label="Achievement artwork">⭐</span></div>
+              <div class="plaque"><h3>Milestone</h3><div class="meta"><span class="tag achieve">Achievement</span><span class="year">2025</span></div><p class="desc">A big goal reached after a long stretch.</p></div>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== TOUR CONTROLS ===== -->
+      <nav class="tour" aria-label="Walk through the museum">
+        <button class="arrow secondary" id="prevRoom" aria-label="Go back to the previous hall">← Back</button>
+        <div class="reading">
+          <span id="posText">You are in the <strong>Lobby</strong></span><br />
+          Hall <span id="curNum">1</span> of <span id="totNum">4</span>
+        </div>
+        <button class="arrow" id="nextRoom" aria-label="Walk to the next hall">Next →</button>
+      </nav>
+    </section>
+  </main>
+
+  <script>
+    const ROOMS = [
+      { id: 'all',      title: 'The Lobby — All Exhibits', hint: 'Hall 1 of 4', desc: 'Everything on display, from front door to back wall.', label: 'Lobby' },
+      { id: 'photo',    title: 'Photo Gallery',             hint: 'Hall 2 of 4', desc: 'Moments and places, hanging in natural light.',      label: 'Photos' },
+      { id: 'project',  title: 'Project Lab',               hint: 'Hall 3 of 4', desc: 'Things you have built and are still building.',      label: 'Projects' },
+      { id: 'achieve',  title: 'Achievement Hall',          hint: 'Hall 4 of 4', desc: 'Milestones and wins, framed on the back wall.',      label: 'Awards' },
+    ];
+    let current = 0;
+
+    const rooms = [...document.querySelectorAll('.room')];
+    const dots = [...document.querySelectorAll('.floor-map .dot')];
+    const tabs = [...document.querySelectorAll('.footdots a')];
+    const titleEl = document.getElementById('roomTitle');
+    const hintEl = document.getElementById('roomHint');
+    const descEl = document.getElementById('roomDesc');
+    const curNum = document.getElementById('curNum');
+    const posText = document.getElementById('posText');
+    const prev = document.getElementById('prevRoom');
+    const next = document.getElementById('nextRoom');
+
+    function showRoom(i) {
+      current = Math.max(0, Math.min(ROOMS.length - 1, i));
+      const room = ROOMS[current];
+
+      rooms.forEach((el) => { el.hidden = el.dataset.room !== room.id; });
+      dots.forEach((el) => el.classList.toggle('active', el.dataset.room === room.id));
+      tabs.forEach((el) => { el.classList.toggle('active', el.dataset.room === room.id); });
+
+      titleEl.textContent = room.title;
+      hintEl.textContent = room.hint;
+      descEl.textContent = room.desc;
+      curNum.textContent = String(current + 1);
+      posText.innerHTML = 'You are in the <strong>' + room.label + '</strong>';
+
+      prev.disabled = current === 0;
+      next.disabled = current === ROOMS.length - 1;
+      prev.setAttribute('aria-label', current > 0 ? 'Go back to ' + ROOMS[current - 1].label : 'You are at the lobby');
+      next.setAttribute('aria-label', current < ROOMS.length - 1 ? 'Walk to ' + ROOMS[current + 1].label : 'This is the last hall');
+    }
+
+    prev.addEventListener('click', () => showRoom(current - 1));
+    next.addEventListener('click', () => showRoom(current + 1));
+    document.querySelectorAll('.footdots a, .floor-map .dot').forEach((el) => {
+      el.addEventListener('click', (ev) => {
+        ev.preventDefault();
+        const idx = ROOMS.findIndex((r) => r.id === el.dataset.room);
+        if (idx >= 0) showRoom(idx);
+        document.getElementById('gallery').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+    document.getElementById('enterTour').addEventListener('click', () => {
+      document.getElementById('gallery').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    // Respect reduced motion for scrollIntoView
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.querySelectorAll('a[href^="#"]').forEach((a) => {
+      a.addEventListener('click', (ev) => {
+        const id = a.getAttribute('href');
+        if (id && id !== '#') {
+          const el = document.querySelector(id);
+          if (el) { ev.preventDefault(); el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }); }
+        }
+      });
+    });
+
+    showRoom(0);
+  </script>
+</body>
+</html>

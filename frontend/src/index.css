@@ -170,3 +170,14 @@ body::after {
   opacity: 0.3;
   z-index: 9999;
 }
+
+
+/* ---- Keyboard focus visibility ---- */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #ffb000;
+  outline-offset: 2px;
+}
