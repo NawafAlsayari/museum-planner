@@ -124,10 +124,7 @@ DIRECT_URL="postgresql://user:password@host.region.aws.neon.tech/db?sslmode=requ
 JWT_SECRET="change-me-in-production"
 PORT=4000
 
-# Optional — seed admin account defaults. Set SEED_PASSWORD to avoid the default 'admin123'.
-# SEED_EMAIL="admin@example.com"
-# SEED_USERNAME="admin"
-# SEED_PASSWORD="a-strong-password"
+"
 
 # Password reset email (SMTP). Leave unset to disable the feature.
 SMTP_HOST="smtp.example.com"
